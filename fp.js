@@ -16,7 +16,7 @@ Lazy.filter = curry(function *(f, iter) {
 
 Lazy.flat = function *(iter) {
     for (const a of iter) {
-        if (a && a[Symbol.iterator]) yield* b;
+        if (a && a[Symbol.iterator]) yield* a;
         else yield a;
     }
 };
@@ -56,5 +56,5 @@ module.exports = {
     go,
     reduce,
     take,
-    Lazy,
+    L: Lazy,
 };
