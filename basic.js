@@ -92,7 +92,7 @@ const f2 = (iter, length) => go(
 function main() {
     log(f2([1,2,3,4,5], 1));
     log(f2([1,2,3,4,5], 2));
-    log(f2(Lazy.range(100), 10));
+    log(f2(Lazy.range(Infinity), 100));
 }
 
 main();
