@@ -1,27 +1,30 @@
 const log = console.log;
 
-function *filter(f, iter) {
+const curry = f => (a, ...args) =>
+    args.length ? f(a, ...args) : (...as) => f(a, ...as);
+
+const filter = curry(function *(f, iter) {
     for (const a of iter) {
         if (f(a)) yield a;
     }
-}
+});
 
-function *map(f, iter) {
+const map = curry(function *(f, iter) {
     for (const a of iter) {
         yield f(a);
     }
-}
+});
 
-function take(length, iter) {
+const take = curry(function (length, iter) {
     const res = [];
     for (const a of iter) {
         res.push(a);
         if (res.length === length) return res;
     }
     return res;
-}
+})
 
-function reduce(f, acc, iter) {
+const reduce = curry(function (f, acc, iter) {
     // New spec of reduce
     if (arguments.length === 2) {
         iter = acc[Symbol.iterator]();
@@ -31,7 +34,7 @@ function reduce(f, acc, iter) {
         acc = f(acc, a);
     }
     return acc;
-}
+});
 
 const add = (a, b) => a + b;
 
@@ -64,10 +67,17 @@ function f(iter, length) {
 
 const f2 = (iter, length) => go(
     iter,
-    iter => filter(a => a % 2, iter),
-    iter => map(a => a * a, iter),
-    iter => take(length, iter),
-    iter => reduce(add, 0, iter)
+    // currying step 1
+    // iter => filter(a => a % 2)(iter),
+    // iter => map(a => a * a)(iter),
+    // iter => take(length)(iter),
+    // iter => reduce(add)(iter)
+
+    // currying step 2
+    filter(a => a % 2),
+    map(a => a * a),
+    take(length),
+    reduce(add)
 );
   
 function main() {
