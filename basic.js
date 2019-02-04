@@ -34,7 +34,11 @@ const add = (a, b) => a + b;
 function f(iter, length) {
     // 명령형 프로그래밍에서 if, 값, 증가, for문 같이 추상화 된것을
     // FP에선 함수를 이용해 같은 동작을 한다.
-    return reduce(add, 0, take(length, map(a => a * a, filter(a => a % 2, iter))));
+    // 읽는 순서는 오른쪽에서 왼쪽으로
+    return reduce(
+        add,
+        0,
+        take(length, map(a => a * a, filter(a => a % 2, iter))));
 
     // 함수 내부는 외부 세상에 영향을 끼치지 않는다.
     // log 함수 호출은 main에서 실행
