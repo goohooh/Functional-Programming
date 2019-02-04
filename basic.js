@@ -22,6 +22,11 @@ function take(length, iter) {
 }
 
 function reduce(f, acc, iter) {
+    // New spec of reduce
+    if (arguments.length === 2) {
+        iter = acc[Symbol.iterator]();
+        acc = iter.next().value;
+    }
     for (const a of iter) {
         acc = f(acc, a);
     }
@@ -36,7 +41,10 @@ const add = (a, b) => a + b;
  * 1. 인자를 리스트로 본다
  * 2. 리스트의 값들을 적절히 평가한다
  */
-const go = (a, ...fs) => reduce((v, f) => f(v), a, fs);
+// const go = (a, ...fs) => reduce((v, f) => f(v), a, fs);
+
+// second implementation by new reduce
+const go = (...as) => reduce((v, f) => f(v), as);
 
 // 리스트에서 홀수를 length만큼 뽑아서 제곱한 후 더하기 
 function f(iter, length) {
