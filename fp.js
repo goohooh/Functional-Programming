@@ -1,6 +1,9 @@
 const curry = f => (a, ...args) =>
     args.length ? f(a, ...args) : (...as) => f(a, ...as);
 
+const delay = (time, a) => new Promise(resolve =>
+    setTimeout(() => resolve(a), time));
+
 const Lazy = {};
 
 Lazy.range = function *(stop) {
@@ -49,7 +52,8 @@ const reduce = curry(function (f, acc, iter) {
 
 const add = (a, b) => a + b;
 
-const go = (...as) => reduce((v, f) => f(v), as);
+const go = (...as) => reduce(goPromise, as);
+const goPromise = (a, f) => a instanceof Promise ? a.then(f) : f(a);
 
 module.exports = {
     add,

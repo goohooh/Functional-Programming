@@ -1,3 +1,5 @@
+const fp = require('./fp');
+
 /***
  * Monad
  ***
@@ -53,3 +55,26 @@ const c = 777;
 const d = delay(500, 5);
 go1(c, log);
 go1(d, log);
+
+const value = fp.go(Promise.resolve(1),
+    a => a + 1,
+    a => delay(1500, a + 123123),
+    log
+);
+
+log(value); // 원하는 시점에 평가
+
+async function af() {
+    const a = await fp.go(Promise.resolve(1),
+        a => a + 300,
+        a => delay(500, a + 10000),
+        a => delay(500, a + 20000),
+    );
+    const b = await fp.go(Promise.resolve(1),
+        a => a + 300,
+        a => delay(400, a + 10),
+        a => delay(600, a + 20),
+    );
+    log(a, b);
+}
+af();
