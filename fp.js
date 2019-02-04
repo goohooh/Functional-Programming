@@ -37,7 +37,16 @@ const take = curry(function (length, iter) {
         if (res.length === length) return res;
     }
     return res;
-})
+});
+
+const takeWhile = curry(function (f, iter) {
+    const res = [];
+    for (const a of iter) {
+        if (!f(a)) return res;
+        res.push(a);
+    }
+    return res;
+});
 
 const reduce = curry(function (f, acc, iter) {
     if (arguments.length === 2) {
@@ -60,5 +69,6 @@ module.exports = {
     go,
     reduce,
     take,
+    takeWhile,
     L: Lazy,
 };
