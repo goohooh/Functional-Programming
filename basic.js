@@ -10,7 +10,7 @@ const Lazy = {};
 Lazy.flat = function *(iter) {
     for (const a of iter) {
         // 아래와 동일 : if (a && a[Symbol.iterator]) for (const b of a) yield b;
-        if (a && a[Symbol.iterator]) yield* b;
+        if (a && a[Symbol.iterator]) yield* a;
         else yield a;
     }
 }
@@ -96,7 +96,7 @@ const f2 = (iter, length) => go(
     take(length),
     reduce(add)
 );
-  
+
 function main() {
     log(f2([1,2,3,4,5], 1));
     log(f2([1,2,3,4,5], 2));
