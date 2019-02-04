@@ -30,7 +30,15 @@ function reduce(f, acc, iter) {
 
 const add = (a, b) => a + b;
 
-// 리스트에서 홀수를 length만큼 뽑아서 제곱한 후 더하기
+/***
+ * todo : go(10, a => a + 1, a => a + 10, log) 순서대로 실행
+ ***
+ * 1. 인자를 리스트로 본다
+ * 2. 리스트의 값들을 적절히 평가한다
+ */
+const go = (a, ...fs) => reduce((v, f) => f(v), a, fs);
+
+// 리스트에서 홀수를 length만큼 뽑아서 제곱한 후 더하기 
 function f(iter, length) {
     // 명령형 프로그래밍에서 if, 값, 증가, for문 같이 추상화 된것을
     // FP에선 함수를 이용해 같은 동작을 한다.
@@ -47,9 +55,10 @@ function f(iter, length) {
 }
 
 function main() {
-    log(f([1,2,3,4,5], 1));
-    log(f([1,2,3,4,5], 2));
-    log(f([1,2,3,4,5], 3));
+    // log(f([1,2,3,4,5], 1));
+    // log(f([1,2,3,4,5], 2));
+    // log(f([1,2,3,4,5], 3));
+    go(10, a => a + 1, a => a + 10, log);
 }
 
 main();
