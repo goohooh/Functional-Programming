@@ -62,11 +62,18 @@ function f(iter, length) {
     // return acc;
 }
 
+const f2 = (iter, length) => go(
+    iter,
+    iter => filter(a => a % 2, iter),
+    iter => map(a => a * a, iter),
+    iter => take(length, iter),
+    iter => reduce(add, 0, iter)
+);
+  
 function main() {
-    // log(f([1,2,3,4,5], 1));
-    // log(f([1,2,3,4,5], 2));
-    // log(f([1,2,3,4,5], 3));
-    go(10, a => a + 1, a => a + 10, log);
+    log(f2([1,2,3,4,5], 1));
+    log(f2([1,2,3,4,5], 2));
+    log(f2([1,2,3,4,5], 3));
 }
 
 main();
