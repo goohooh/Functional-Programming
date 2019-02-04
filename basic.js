@@ -3,13 +3,22 @@ const log = console.log;
 const curry = f => (a, ...args) =>
     args.length ? f(a, ...args) : (...as) => f(a, ...as);
 
-const filter = curry(function *(f, iter) {
+// 지연 함수 filter,map을 통해 시간 복잡도가
+// 명령형 코드와 동일함을 확인할 수 있다.
+const Lazy = {};
+
+Lazy.range = function *(stop) {
+    let i = -1;
+    while(++i < stop) yield i;
+};
+
+Lazy.filter = curry(function *(f, iter) {
     for (const a of iter) {
         if (f(a)) yield a;
     }
 });
 
-const map = curry(function *(f, iter) {
+Lazy.map = curry(function *(f, iter) {
     for (const a of iter) {
         yield f(a);
     }
@@ -74,8 +83,8 @@ const f2 = (iter, length) => go(
     // iter => reduce(add)(iter)
 
     // currying step 2
-    filter(a => a % 2),
-    map(a => a * a),
+    Lazy.filter(a => a % 2),
+    Lazy.map(a => a * a),
     take(length),
     reduce(add)
 );
@@ -83,7 +92,7 @@ const f2 = (iter, length) => go(
 function main() {
     log(f2([1,2,3,4,5], 1));
     log(f2([1,2,3,4,5], 2));
-    log(f2([1,2,3,4,5], 3));
+    log(f2(Lazy.range(100), 10));
 }
 
 main();
