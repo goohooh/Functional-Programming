@@ -7,6 +7,14 @@ const curry = f => (a, ...args) =>
 // 명령형 코드와 동일함을 확인할 수 있다.
 const Lazy = {};
 
+Lazy.flat = function *(iter) {
+    for (const a of iter) {
+        // 아래와 동일 : if (a && a[Symbol.iterator]) for (const b of a) yield b;
+        if (a && a[Symbol.iterator]) yield* b;
+        else yield a;
+    }
+}
+
 Lazy.range = function *(stop) {
     let i = -1;
     while(++i < stop) yield i;
