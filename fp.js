@@ -30,24 +30,6 @@ Lazy.map = curry(function *(f, iter) {
     }
 });
 
-const take = curry(function (length, iter) {
-    const res = [];
-    for (const a of iter) {
-        res.push(a);
-        if (res.length === length) return res;
-    }
-    return res;
-});
-
-const takeWhile = curry(function (f, iter) {
-    const res = [];
-    for (const a of iter) {
-        if (!f(a)) return res;
-        res.push(a);
-    }
-    return res;
-});
-
 const reduce = curry(function (f, acc, iter) {
     if (arguments.length === 2) {
         iter = acc[Symbol.iterator]();
@@ -64,8 +46,35 @@ const add = (a, b) => a + b;
 const go = (...as) => reduce(goPromise, as);
 const goPromise = (a, f) => a instanceof Promise ? a.then(f) : f(a);
 
+const take = curry(function (length, iter) {
+    const res = [];
+    for (const a of iter) {
+        res.push(a);
+        if (res.length === length) return res;
+    }
+    return res;
+});
+
+const takeWhile = curry(function (f, iter) {
+    iter = iter[Symbol.iterator]();
+    iter.return = null;
+    const res = [];
+    return function recur() {
+        for (const a of iter) {
+            const b = goPromise(a, f);
+            if (!b) return res;
+            if (b instanceof Promise) return b.then(
+                async b => b ? (res.push(await a), recur()) : res
+            );
+            res.push(a);
+        }
+        return res;
+    }();
+});
+
 module.exports = {
     add,
+    delay,
     go,
     reduce,
     take,
