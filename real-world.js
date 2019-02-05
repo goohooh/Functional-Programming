@@ -58,7 +58,15 @@ async function job() {
         fp.take(Infinity),
     );
 
-    log(payments, orderIds);
+    // 이미 Promise 스펙에 promise를
+    // 값으로 다룬 흔적을 볼 수 있음 : Promise.all
+    return Promise.all(fp.go(
+        payments,
+        fp.L.filter(p => !orderIds.includes(p.oid)),
+        fp.L.map(p => p.iid),
+        fp.L.map(Impt.cancelPayment),
+        fp.take(Infinity),
+    ));
 }
 
-job();
+job().then(log);
