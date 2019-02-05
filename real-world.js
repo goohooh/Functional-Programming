@@ -32,7 +32,8 @@ const Impt = {
     },
     getPayments: page => {
       console.log(`http://..?page=${page}`);
-      return fp.delay(1000, Impt.payments[page]);
+      // !! : 아래 delay값이 가변하더라도 실패는 허용하지 않는다!
+      return fp.delay(100, Impt.payments[page]);
     },
     cancelPayment: paymentId => Promise.resolve(`${paymentId}: 취소완료`)
 };
@@ -69,4 +70,29 @@ async function job() {
     ));
 }
 
-job().then(log);
+/***
+ * 테스트 상황 발생
+ ***
+ * 여러 제약이 있는 코드(주문건수가 엄청 많아지면? 네트워크 장애시?...)
+
+async function recur() {
+    await fp.delay(1000 * 3);
+    return job().then(log).then(recur);
+}
+ */
+
+/***
+ * 아래의 코드는 테스트가 필요 없다!
+ ***
+ * - 그저 평가와 다름 없음 
+ * - Math.max(2, 59)
+ * - 쉽고 단순한 함수
+ */
+ async function recur() {
+     return Promise.all([
+        fp.delay(1000 * 3),
+        job().then(log),
+     ]).then(recur);
+ }
+
+ recur();
