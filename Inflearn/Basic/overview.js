@@ -43,6 +43,11 @@ const filter = (list, predi) => {
     return newList;
 };
 
+const negate = func => val => !func(val);
+
+const identity = v => v;
+
+
 const rest = (list, num) => Array.prototype.slice.call(list, num || 1);
 
 const reduce = (list, iter, memo) => {
@@ -94,6 +99,30 @@ const go = (arg, ...fns) => {
 const cmap = c.curryr(map);
 const cfilter = c.curryr(filter);
 
+const compact = cfilter(identity);
+
+const reject = (list, predi) => cfilter(list, negate(predi));
+
+const find = c.curryr((list, predi) => {
+    const _keys = keys(list);
+    for(let i = 0, len = _keys.length; i < len; i++) {
+        const val = list[_keys[i]];
+        if (predi(val)) return val;
+    }
+});
+
+const findIndex = c.curryr((list, predi) => {
+    const _keys = keys(list);
+    for(let i = 0, len = _keys.length; i < len; i++) {
+        if (predi(list[_keys[i]])) return i;
+    }
+    return -1;
+});
+
+const some = (list, predi) => findIndex(list, predi || identity) !== -1;
+
+const every = (list, predi) => findIndex(list, negate(predi || identity)) === -1
+
 // go(
 //     users,
 //     cfilter(user => user.age < 30),
@@ -136,8 +165,14 @@ module.exports = {
     isObject,
     keys,
     each,
+    find,
+    findIndex,
+    some,
+    every,
     map: cmap,
     filter: cfilter,
+    reject,
+    compact,
     rest,
     reduce,
     pipe,
