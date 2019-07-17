@@ -28,7 +28,7 @@ const products = [
         price: 21000,
         sizes: [
             { name: 'L', quantity: 3, price: -1000 },
-            { name: '2XL', quantity: 1, price: 2000 },
+            { name: '2XL', quantity: 10, price: 2000 },
         ]
     },
     {
@@ -39,7 +39,48 @@ const products = [
             { name: 'L', quantity: 4, price: 0 },
         ]
     },
-]
+];
+
+// 1. 모든 수량
+const total_quantity = _.reduce((tq, product) => {
+    return _.reduce(product.sizes, (tq, size) => {
+        return tq + size.quantity;
+    }, tq)
+}, 0);
+_.go(
+    products,
+    total_quantity,
+    console.log
+)
+
+// 2. 선택 된 총수량
+_.go(
+    products,
+    _.filter(product => product.is_selected),
+    total_quantity,
+    console.log
+)
+
+// 3. 모든 가격
+const total_price = _.reduce((tp, product) => (
+    _.reduce(product.sizes, (tp, size) => (
+        tp + (product.price + size.price) * size.quantity
+    ), tp)
+), 0);
+
+_.go(
+    products,
+    total_price,
+    console.log
+)
+
+// 4.  선택 된 총 가격
+_.go(
+    products,
+    _.filter(product => product.is_selected),
+    total_price,
+    console.log
+)
 </script>
 </body>
 </html>
