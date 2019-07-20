@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+
+<script src="../partial.min.js"></script>
+<script>
+const square = a =>
+    new Promise(resolve =>
+        setTimeout(() => resolve(a * a), 500)
+    );
+
+square(3)
+    .then(square)
+    .then(square)
+    .then(square)
+    .then(r => console.log(r))
+
+_.go(square(4),
+    square,
+    square,
+    square,
+    console.log
+);
+
+const list = [2,3,4];
+const n = list.map(i => square(i))
+Promise.all(n).then(console.log)
+
+_.go(list,
+    _.map(square),
+    _.map(square),
+    _.map(square),
+    console.log
+);
+
+</script>
+</body>
+</html>
