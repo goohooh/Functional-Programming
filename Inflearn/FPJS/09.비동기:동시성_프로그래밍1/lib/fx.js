@@ -55,6 +55,13 @@ const range = len => {
 const join = curry((sep, iter) =>
     reduce((a, b) => `${a}${sep}${b}`, iter));
 
+find = curry((f, iter) => go(
+    iter,
+    filter(f),
+    take(1),
+    ([a]) => a,
+));
+
 const L = {};
 
 L.range = function *(l) {
@@ -70,13 +77,6 @@ L.map = curry(function *(f, iter) {
 L.filter = curry(function *(f, iter) {
     for (const a of iter) if (f(a)) yield a;
 });
-
-L.find = curry((f, iter) => go(
-    iter,
-    filter(f),
-    take(1),
-    ([a]) => a,
-));
 
 L.entries = function *(obj) {
     for(const k in obj) yield [k, obj[k]];
@@ -115,6 +115,7 @@ module.exports = {
     add,
     range,
     join,
+    find,
     takeAll,
     flatten,
     flatMap,
