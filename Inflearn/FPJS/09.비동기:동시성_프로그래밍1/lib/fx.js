@@ -60,11 +60,17 @@ const add = (a, b) => a + b;
 
 const take = curry((l, iter) => {
     let res = [];
-    for (const a of iter) {
-        res.push(a);
-        if (res.length === l ) return res;
-    }
-    return res;
+    return function recur() {
+        for (const a of iter) {
+            if (a instanceof Promise) return a.then(a => {
+                res.push(a);
+                if (res.length === l ) return res;
+            });
+            res.push(a);
+            if (res.length === l ) return res;
+        }
+        return res;
+    } ();
 });
 
 const takeAll = take(Infinity);
@@ -95,7 +101,7 @@ L.range = function *(l) {
     };
 };
 L.map = curry(function *(f, iter) {
-    for (const a of iter) yield f(a);
+    for (const a of iter) yield go1(a, f);
 });
 
 L.filter = curry(function *(f, iter) {
