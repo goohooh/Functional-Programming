@@ -1,9 +1,12 @@
-// const { flatten: Lflatten } = require('./l.fx');
-
  const curry = f =>
     (a, ..._) => _.length
         ? f(a, ..._)
         : (..._) => f(a, ..._);
+
+const nop = Symbol('nop');
+const noop = () => {};
+const catchNoop = arr =>
+    (arr.forEach(a => a instanceof Promise ? a.catch(noop) : a), arr);
 
 const map = curry((f, iter) => {
     const res = [];
@@ -19,13 +22,46 @@ const filter = curry((f, iter) => {
     return res;
 });
 
+const take = curry((l, iter) => {
+    let res = [];
+    // for (const a of iter) {
+    //     res.push(a);
+    //     if (res.length === l ) return res;
+    // }
+    // return res; - 1
+
+    iter = iter[Symbol.iterator]();
+    return (function recur() {
+        let cur;
+        while (!(cur = iter.next()).done) {
+            const a = cur.value;
+            if (a instanceof Promise) {
+                return a
+                    .then(a =>
+                        (res.push(a), res).length === l ? res : recur()
+                    ).catch(e =>
+                        e === nop ? recur() : Promise.reject(e));
+            }
+            res.push(a);
+            if (res.length === l ) return res;
+        }
+        return res;
+    })();
+});
+
 const go1 = (a, f) => a instanceof Promise ? a.then(f) : f(a);
 
+const reduceF = (acc, a, f) =>
+    a instanceof Promise
+        ? a.then(a => f(acc, a), e => e === nop ? acc : Promise.reject(e))
+        : f(acc, a);
+
+const head = iter => go1(take(1, iter), ([h]) => h);
+
 const reduce = curry((f, acc, iter) => {
-    if (!iter) {
-        iter = acc[Symbol.iterator]();
-        acc = iter.next().value;
-    }
+    if (!iter) return reduce(f, head(iter = acc[Symbol.iterator]()), iter);
+    iter = iter[Symbol.iterator]();
+
     // for (const i of iter) acc = f(acc, i); - 1
 
     // for (const i of iter) {
@@ -44,8 +80,9 @@ const reduce = curry((f, acc, iter) => {
     // })(acc); - 3 : 초기 값이 Promise일 경우 처리 못함
 
     return go1(acc, function recur(acc) {
-        for (const a of iter) {
-            acc = f(acc, a);
+        let cur;
+        while (!(cur = iter.next()).done) {
+            acc = reduceF(acc, cur.value, f);
             if (acc instanceof Promise) return acc.then(recur);
         } 
         return acc;
@@ -57,15 +94,6 @@ const go = (...args) => reduce((a, f) => f(a), args);
 const pipe = (f, ...fs) => (...as) => go(f(...as), ...fs);
 
 const add = (a, b) => a + b;
-
-const take = curry((l, iter) => {
-    let res = [];
-    for (const a of iter) {
-        res.push(a);
-        if (res.length === l ) return res;
-    }
-    return res;
-});
 
 const takeAll = take(Infinity);
 
@@ -94,12 +122,18 @@ L.range = function *(l) {
         yield i++;
     };
 };
-L.map = curry(function *(f, iter) {
-    for (const a of iter) yield f(a);
+L.map = curry(function* (f, iter) {
+    for (const a of iter) {
+        yield go1(a, f);
+    }
 });
 
 L.filter = curry(function *(f, iter) {
-    for (const a of iter) if (f(a)) yield a;
+    for (const a of iter) {
+        const b = go1(a, f);
+        if (b instanceof Promise) yield b.then(b => b ? a : Promise.reject(nop));
+        else if (b) yield a;
+    }
 });
 
 L.entries = function *(obj) {
@@ -128,7 +162,25 @@ const flatten = pipe(L.flatten, takeAll);
 
 const flatMap = curry(pipe(L.map, flatten));
 
+const C = {};
+
+C.reduce = curry((f, acc, iter) => {
+    // return iter
+    //     ? reduce(f, acc, [...iter])
+    //     : reduce(f, [...acc]); - 1 : [...]에서 에러 핸들링 필요함
+
+    const iter2 = catchNoop(iter ? [...iter] : [...acc]);
+    return iter
+        ? reduce(f, acc, iter2)
+        : reduce(f, iter2);
+});
+
+C.take = curry((l, iter) => take(l, catchNoop([...iter])))
+
 module.exports = {
+    add,
+    noop,
+    catchNoop,
     curry,
     map,
     filter,
@@ -136,7 +188,6 @@ module.exports = {
     take,
     go,
     pipe,
-    add,
     range,
     join,
     find,
@@ -144,4 +195,5 @@ module.exports = {
     flatten,
     flatMap,
     L,
+    C,
 };
