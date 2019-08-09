@@ -106,5 +106,7 @@ async function f5(list) {
 /**
  * 비동기 에러핸들링에서 파이프라인의 이점은?
  **
+ * - async/await의 동작을 잘 알아야 함
+ * - promise를 await와 풀어야하다는 사실에 유의할 것
  */
 
