@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/goohooh/Functional-Programming#readme",
   "dependencies": {
+    "fxjs": "^0.11.4",
     "partial-js": "^1.1.8"
   }
 }
