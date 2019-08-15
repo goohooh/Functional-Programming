@@ -111,7 +111,7 @@
 </head>
 <body>
     
-<script src="https://unpkg.com/fxjs/dist/fx.min.js"></script>
+<script src="https://unpkg.com/fxjs/dist/fx.js"></script>
 <script>
 const $ = {};
 
@@ -133,6 +133,8 @@ $.append = _.curry((parent, child) => parent.appendChild(child));
 $.remove = el => el.parentNode.removeChild(el);
 
 $.on = (evt, f) => els => _.each(el => el.addEventListener(evt, f), _.isIterable(els) ? els : [els]);
+
+$.addClass = _.curry((className, el) => el.classList.add(className));
 </script>
 <script>
 const log = console.log;
@@ -151,13 +153,38 @@ Images.tmpl = imgs => `
     <div class="images">
         ${strMap(img => `
                 <div class="image">
-                    <div class="box"><img src="${img.url}" /></div>
+                    <div class="box"><img src="" lazy-src="${img.url}" class="fade" /></div>
                     <div class="name">${img.name}</div>
                     <div class="remove">x</div>
                 </div>
         `, imgs)}
     </div>
 `;
+
+// 어떤 곳에서도 사용 가능
+// 추상화 레벨, 재사용성 높음
+takeAllWithLimit = _.curry((limit, iter) => {
+    let r = L.range(Infinity);
+    return _.go(
+        iter,
+        _.groupBy(_ => Math.floor(r.next().value / limit)),
+        L.values,
+        L.map(L.map(f => f())),
+        L.map(C.takeAll),
+    );
+});
+
+Images.loader = limit => _.tap(
+    $.findAll('img'),
+    L.map(img => _ => new Promise(resolve => {
+        img.onload = () => resolve(img);
+        img.src = img.getAttribute('lazy-src');
+    })), // -> 예약을 해둔 상태
+    takeAllWithLimit(limit),
+    _.each(_.each($.addClass('fade-in')))
+    // C.takeAll,
+    // _.each($.addClass('fade-in'))
+)
 
 const Ui = {};
 
@@ -215,6 +242,7 @@ _.go(
     Images.tmpl,
     $.el,
     $.append($.qs('body')),
+    Images.loader(4),
     $.findAll('.remove'),
     $.on('click', async ({ currentTarget: ct }) => {
         await Ui.confirm('정말 삭제하시겠습니까?') &&
@@ -222,10 +250,14 @@ _.go(
             ct,
             $.closest('.image'),
             $.remove,
-            _ => Ui.alert('삭제 되었습니다.')
         )
     }),
 );
+
+/**
+ * 고차함수
+ * - 도메인이 없다 => 데이터 형이 없다
+ */
 </script>
 </body>
 </html>
