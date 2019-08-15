@@ -161,13 +161,19 @@ Images.tmpl = imgs => `
     </div>
 `;
 
+const groupBySize = _.curry((size, iter) => {
+    let r = L.range(Infinity);
+    return _.groupBy(_ => Math.floor(r.next().value / size), iter);
+});
+
 // 어떤 곳에서도 사용 가능
 // 추상화 레벨, 재사용성 높음
-takeAllWithLimit = _.curry((limit, iter) => {
-    let r = L.range(Infinity);
+const takeAllWithLimit = _.curry((limit = Infinity, iter) => {
+    // let r = L.range(Infinity); -> groupBy 외에는 알 필요 없음
     return _.go(
         iter,
-        _.groupBy(_ => Math.floor(r.next().value / limit)),
+        // _.groupBy(_ => Math.floor(r.next().value / limit)), -> 더 간결하게 
+        groupBySize(limit),
         L.values,
         L.map(L.map(f => f())),
         L.map(C.takeAll),
@@ -237,21 +243,27 @@ Ui.confirm = Ui.message([{
     value: true
 }]);
 
+Ui.remover = (btnSel, targetSel, before = a => a, after = a => a) => _.pipe(
+    $.findAll(btnSel),
+    $.on('click', async ({ currentTarget: ct }) => {
+        await Ui.confirm('정말 삭제하시겠습니까?') &&
+        _.go(
+            ct,
+            $.closest(targetSel),
+            before,
+            $.remove,
+            after,
+        )
+    }),
+);
+
 _.go(
     Images.fetch(),
     Images.tmpl,
     $.el,
     $.append($.qs('body')),
     Images.loader(4),
-    $.findAll('.remove'),
-    $.on('click', async ({ currentTarget: ct }) => {
-        await Ui.confirm('정말 삭제하시겠습니까?') &&
-        _.go(
-            ct,
-            $.closest('.image'),
-            $.remove,
-        )
-    }),
+    Ui.remover('.remove', '.image', undefined, console.log),
 );
 
 /**
